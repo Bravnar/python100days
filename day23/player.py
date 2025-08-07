@@ -9,8 +9,8 @@ FULL_HP = 3
 class Player(Turtle):
     def __init__(self):
         super().__init__()
-        self.shape("turtle")
-        self.color("black")
+        self.shape("arrow")
+        self.color("white")
         self.penup()
         self.setheading(90)
         self.goto(STARTING_POSITION)
@@ -33,7 +33,7 @@ class Player(Turtle):
     def die(self):
         self.health -= 1
         print(f"Player health: {self.health}")
-        self._reset_position()
+        self.reset_position()
 
-    def _reset_position(self):
+    def reset_position(self):
         self.goto(STARTING_POSITION)

@@ -4,11 +4,14 @@ from car_manager import CarManager
 from scoreboard import Scoreboard
 
 game_is_on = True
+cooldown = 1000
 screen = Screen()
 screen.setup(width=600, height=600)
+screen.bgcolor('black')
 screen.tracer(0)
 player = Player()
 manager = CarManager()
+scoreboard = Scoreboard()
 
 def gameplay_loop():
 
@@ -24,7 +27,8 @@ def gameplay_loop():
     screen.onkeypress(player.move_backward, 's')
 
     manager.move_cars()
-    manager.monitor_collisions(player)
+    manager.monitor_collisions(player, scoreboard)
+    manager.monitor_progress(player, scoreboard)
 
     if player.health == 0:
         game_is_on = False
@@ -33,7 +37,7 @@ def gameplay_loop():
 
 def spawn_car_loop():
     manager.spawn_car()
-    screen.ontimer(spawn_car_loop, 1000)
+    screen.ontimer(spawn_car_loop, cooldown // (manager.getLevel() + 1))
 
 if __name__ == "__main__":
 

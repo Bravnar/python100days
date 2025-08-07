@@ -1,6 +1,7 @@
 from turtle import Turtle
 from random import choice
 from player import Player
+from scoreboard import Scoreboard
 
 
 START_X = 340
@@ -20,9 +21,10 @@ class Car(Turtle):
         new_x = self.xcor() - self.move_speed
         self.goto(new_x, self.ycor())
 
-    def collide(self, player: Player):
+    def collide(self, player: Player, scoreboard: Scoreboard):
         if self.distance(player) < 30:
             player.die()
+            scoreboard.decrHealth()
 
     def _reset_position(self):
         self.goto(START_X, choice(RAND_POS))
