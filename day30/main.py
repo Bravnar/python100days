@@ -4,6 +4,29 @@ import pyperclip
 from password_generator import generator
 import json
 
+# ---------------------------- SEARCH ------------------------------- #
+
+
+
+def search():
+    search_item = website_entry.get()
+    if not (search_item): 
+        messagebox.showerror(title="Error", message=f"Nothing found for search: '{search_item}'")
+        return
+
+    try:
+        with open("data.json", "r") as json_file:
+            data = json.load(json_file)
+            if search_item in data.keys():
+                message = f"Email: {data[search_item]['email']}\nPassword: {data[search_item]['password']}"
+                messagebox.showinfo(title=search_item, message=message)
+            else:
+                messagebox.showerror(title="Error", message=f"Nothing found for search: '{search_item}'")
+
+    except FileNotFoundError:
+        messagebox.showerror(title="Error", message=f"FileNotFound")
+
+
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 
 def generate_password():
@@ -49,15 +72,23 @@ def save_to_file():
     if not check_email(email) or not check_password(password):
         return
     
-    new_credentials = {website: {"email": email, "password": password}}
+    new_credentials = {
+        website: {
+            "email": email,
+            "password": password
+        }
+    }
 
     try:
         with open("data.json", "r") as json_file:
             data = json.load(json_file)
-            data.update(new_credentials)
     except FileNotFoundError:    
         with open("data.json", "w") as json_file:
-            json.dump(new_credentials, sort_keys=True, indent=4)
+            json.dump(new_credentials, json_file, sort_keys=True, indent=4)
+    else:
+        data.update(new_credentials)
+        with open("data.json", "w") as json_file:
+            json.dump(data, json_file, sort_keys=True, indent=4)
     finally:
         website_entry.delete(0, END)
         password_entry.delete(0, END)
@@ -78,6 +109,9 @@ website_label = Label(text="Website:")
 website_label.grid(row=1, column=0, sticky="nw")
 website_entry = Entry(width=35)
 website_entry.grid(row=1, column=1, columnspan=2, sticky="new")
+
+search_btn = Button(text="Search", command=search)
+search_btn.grid(row=1, column=2, sticky="sew")
 
 email_label = Label(text="Email/Username:")
 email_label.grid(row=2, column=0, sticky="nw")
