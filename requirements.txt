@@ -2,3 +2,4 @@ pandas
 pygame
 pyinstaller
 pyperclip
+requests
