@@ -3,3 +3,4 @@ pygame
 pyinstaller
 pyperclip
 requests
+dotenv

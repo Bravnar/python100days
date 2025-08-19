@@ -1,2 +1,0 @@
-# Kanye quote machine
-
