@@ -18,6 +18,7 @@ PARAMS = {
     "lat": LAT,
     "lon": LNG,
     "units": "metric",
+    "cnt": 4,
     "appid": API_KEY
 }
 # ---------------------------------------------- #
@@ -26,26 +27,30 @@ PARAMS = {
 #     weather_data = r.json()
 #     print(weather_data)
 
+# ----------------- BUILDING THE SMS ------------------------------ #
+
 with requests.get(FIVE_DAY_3H, params=PARAMS) as r:
-    five_day_data = r.json()
-    print(five_day_data)
-    avg_temp = round(mean([float(x['main']['temp']) for x in five_day_data['list'][ : 4]]), 1)
+    r.raise_for_status()
+    weather_data = r.json()
+    avg_temp = round(mean([float(x['main']['temp']) for x in weather_data['list']]), 1)
     rain = []
-    for forecast in five_day_data['list'][:4]:
+    for forecast in weather_data['list']:
         ts = int(forecast['dt'])
         chance_rain = forecast.get('rain')
         date_time = datetime.fromtimestamp(ts).strftime('%H:%M:%S')
         if chance_rain and float(chance_rain['3h']) >= 1.0:
             rain.append((chance_rain, date_time.split(":")[0]))
-        # print(f"Expected rain: {rain}") if rain and float(rain['3h']) >= 1.0 else print(f"Rain not expected.")
 
 if rain:
-    rain_message = f"It might rain today at {rain[1]}!\nTake an umbrella :)"
+    rain_times = []
+    for occ in rain:
+        rain_times.append(f"{occ[1]}:00") 
+
+    rain_message = f"It might rain today at {rain_times}!\nTake an umbrella :)"
 else:
-    rain_message = f"Looks like it won't rain"
+    rain_message = "Doesn't look like it will rain today."
 
 sms_template = f"""
-
 Good Morning!
 
 Today's average temperature will be {avg_temp}C.
@@ -53,8 +58,23 @@ Today's average temperature will be {avg_temp}C.
 {rain_message}
 
 """
+# print(sms_template)
 
-print(sms_template)
+# ------------------- TWILIO ---------------------------------------#
 
+from twilio.rest import Client
+
+account_sid = getenv('ACCOUNT_SID')
+auth_token = getenv('AUTH_TOKEN')
+messaging_service_sid = getenv('MSG_SID')
+phone_number = getenv('PHONE_NUMBER')
+
+client = Client(account_sid, auth_token)
+message = client.messages.create(
+    messaging_service_sid=messaging_service_sid,
+    body=sms_template,
+    to=phone_number
+)
+print(message.sid)
 
 

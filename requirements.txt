@@ -4,3 +4,5 @@ pyinstaller
 pyperclip
 requests
 dotenv
+flask
+twilio
