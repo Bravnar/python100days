@@ -2,6 +2,7 @@
 import requests
 from dotenv import load_dotenv
 from os import getenv
+from datetime import datetime
 
 load_dotenv()
 
@@ -19,17 +20,12 @@ BLACK = "kuro"
 class PixelaManager:
     def __init__(self, token: str = None, account: str = None):
         if (not token or not account):
-            print("Token and Account not provided")
-            self._token, self._account = self._get_credentials()
-        else:
-            self._token = token
-            self._account = account
-        
-        # User
+            raise ValueError("Token and Account not provided")
+        self._token = token
+        self._account = account
         self._user_ep = f"{PIXELA_URL}"
-        # Graphs
-        self._graph_ep = f"{PIXELA_URL}/{self._account}"
-        self._headers = {"X-USER-TOKEN": self._account}
+        self._graph_ep = f"{PIXELA_URL}/{self._account}/graphs"
+        self._headers = {"X-USER-TOKEN": self._token}
         
     def view_user_profile(self, username: str):
         r = requests.get(f"https://pixe.la/@{username}")
@@ -37,7 +33,7 @@ class PixelaManager:
             
     def update_user_profile(self, username: str, **kwargs):
         parameters = kwargs
-        with requests.put(f"pixe.la/@{username}", json=parameters, headers=headers) as r:
+        with requests.put(f"https://pixe.la/@{username}", json=parameters, headers=headers) as r:
             return r.text
          
     def create_graph(self, id: str, name: str, unit: str, type: str, color: str, **kwargs):
@@ -49,8 +45,9 @@ class PixelaManager:
             "color": color,
             **kwargs
         }
-        with requests.post(f"{self._graph_ep}/", json=parameters, headers=self._headers) as r:
-            return r.text
+        r = requests.post(f"{self._graph_ep}", json=parameters, headers=self._headers)
+        r.raise_for_status()
+        return r.text
         
     def update_graph(self, graphID: str,  **kwargs):
         r = requests.put(f"{self._graph_ep}/{graphID}", json=kwargs)
@@ -66,11 +63,15 @@ class PixelaManager:
             "quantity": quantity,
             **kwargs
         }
-        r = requests.post(f"{self._graph_ep}/{graphID}/", json=params, header=self._headers)
-        return r.text
-    
-    
+        r = requests.post(f"{self._graph_ep}/{graphID}", json=params, headers=self._headers)
+        r.raise_for_status()
+        return r.text    
+
 if __name__ == "__main__":
     pixManager = PixelaManager(TOKEN, USERNAME)
     r = pixManager.view_user_profile(USERNAME)
-    print(r)
+    # graph = pixManager.create_graph("graph2", "TestGraph", "km", "float", BLACK)
+    # print(graph)
+    # test_pixel = pixManager.post_pixel("graph1", datetime.today().strftime("%Y%m%d"), "5000")
+    test_pixel = pixManager.post_pixel("graph1", "20250219", "10000")
+    print(test_pixel)
